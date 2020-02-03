@@ -1,0 +1,12 @@
+{
+  "name": "ephemeral-oauth",
+  "version": "0.0.1",
+  "description": "oAuth2 framework for serverless apps",
+  "main": "src/index.js",
+  "author": "Cameron Jenkinson",
+  "license": "MIT",
+  "dependencies": {
+    "lodash": "^4.17.15",
+    "query-string": "^6.10.1"
+  }
+}
