@@ -1,5 +1,5 @@
 {
-  "name": "ephemeral-oauth",
+  "name": "ephemeral-oauth2",
   "version": "0.0.1",
   "description": "oAuth2 framework for serverless apps",
   "main": "src/index.js",
