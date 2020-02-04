@@ -2,11 +2,16 @@ const {
   InvalidArgumentError,
   InvalidRequestError,
   InvalidClientError,
-  ServerError
+  ServerError,
 } = require('../utils/errors');
 
-const parseEvent = require('../utils/parse-event');
+const parseAWSEvent = require('../utils/parse-aws-event');
 const is = require('../utils/request-validator');
+
+const {
+  validateTokenModel,
+  createTokenResponse
+} = require('../token');
 
 const grantTypes = {
   client_credentials: require('../grant-types/client-credentials'),
@@ -39,7 +44,7 @@ const getClient = async ({ body }, options) => {
     }
 
     // TODO
-    // if (this.isClientAuthenticationRequired(grantType) && !credentials.clientSecret) {
+    // if (isClientAuthenticationRequired(grantType) && !credentials.clientSecret) {
     //   throw new InvalidRequestError('Missing parameter: `client_secret`');
     // }
 
@@ -77,11 +82,11 @@ const getRefreshTokenLifetime = (client, options) => {
 }
 
 const handleGrantType = (eventRequest, client, options) => {
-  var grantType = eventRequest.body.grant_type;
+  // const grantType = eventRequest.body.grant_type;
 
-  if (!grantType) {
-    throw new InvalidRequestError('Missing parameter: `grant_type`');
-  }
+  // if (!grantType) {
+  //   throw new InvalidRequestError('Missing parameter: `grant_type`');
+  // }
 
   // TODO
   // if (!is.nchar(grantType) && !is.uri(grantType)) {
@@ -99,7 +104,7 @@ const handleGrantType = (eventRequest, client, options) => {
   const accessTokenLifetime = getAccessTokenLifetime(client, options);
   const refreshTokenLifetime = getRefreshTokenLifetime(client, options);
 
-  const GrantType = grantTypes[grantType];
+  const createGrantType = grantTypes['client_credentials'];
 
   const tokenOptions = {
     accessTokenLifetime: accessTokenLifetime,
@@ -108,29 +113,32 @@ const handleGrantType = (eventRequest, client, options) => {
     alwaysIssueNewRefreshToken: options.alwaysIssueNewRefreshToken
   };
 
-  return new GrantType(tokenOptions)
-    .handle(eventRequest, client);
+  const {
+    handle
+  } = createGrantType(tokenOptions);
+
+  return handle(eventRequest, client);
 }
 
-module.exports = async (event, options) => {
+module.exports = async (event, config) => {
   try {
-    const config = Object.assign({
+    const options = Object.assign({
       accessTokenLifetime: 60 * 60,             // 1 hour
       refreshTokenLifetime: 60 * 60 * 24 * 14,  // 2 weeks
       allowExtendedTokenAttributes: false,
       requireClientAuthentication: {},          // Defaults to true for all grant types
-      ...options,
+      ...config,
     });
 
-    if (!config.accessTokenLifetime) {
+    if (!options.accessTokenLifetime) {
       throw new InvalidArgumentError('Missing option: `accessTokenLifetime`');
     }
 
-    if (!config.refreshTokenLifetime) {
+    if (!options.refreshTokenLifetime) {
       throw new InvalidArgumentError('Missing option: `refreshTokenLifetime`');
     }
 
-    if (!config.model.getClient) {
+    if (!options.model.getClient) {
       throw new InvalidArgumentError('model does not implement `getClient()`');
     }
 
@@ -144,7 +152,7 @@ module.exports = async (event, options) => {
     // this.alwaysIssueNewRefreshToken = options.alwaysIssueNewRefreshToken !== false;
 
     // Parse event request
-    const eventRequest = parseEvent(event);
+    const eventRequest = parseAWSEvent(event);
 
     const client = await getClient(eventRequest, options);
 
@@ -160,25 +168,16 @@ module.exports = async (event, options) => {
       throw new ServerError('`grants` must be an array');
     }
 
-    const data = await handleGrantType(client, eventRequest);
+    const data = await handleGrantType(eventRequest, client, options);
 
-    // const model = new TokenModel(data, {
-    //   allowExtendedTokenAttributes: this.allowExtendedTokenAttributes
-    // });
+    const token = validateTokenModel(data, {
+      allowExtendedTokenAttributes: options.allowExtendedTokenAttributes
+    });
 
-    // const tokenType = getTokenType(model);
+    const tokenResponse = createTokenResponse(token);
 
-    // this.updateSuccessResponse(response, tokenType);
-    return {
-      token: client
-    }
+    return tokenResponse;
   } catch (error) {
-    if (!(e instanceof OAuthError)) {
-      e = new ServerError(e);
-    }
-
-    // this.updateErrorResponse(response, e);
-
-    throw e;
+    throw new ServerError(error);
   }
 }
