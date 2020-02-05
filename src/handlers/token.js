@@ -1,9 +1,13 @@
+const { has, includes } = require('lodash');
+
 const {
   InvalidArgumentError,
   InvalidRequestError,
   InvalidClientError,
+  UnsupportedGrantTypeError,
+  UnauthorizedClientError,
   ServerError,
-} = require('../utils/errors');
+} = require('../errors');
 
 const parseAWSEvent = require('../utils/parse-aws-event');
 const is = require('../utils/request-validator');
@@ -17,44 +21,50 @@ const grantTypes = {
   client_credentials: require('../grant-types/client-credentials'),
 };
 
-const getClientCredentials = (body) => {
+const isClientAuthenticationRequired = (grantType, options) => {
+  if (Object.keys(options.requireClientAuthentication).length > 0) {
+    return (typeof options.requireClientAuthentication[grantType] !== 'undefined') ? options.requireClientAuthentication[grantType] : true;
+  }
+
+  return true;
+}
+
+const getClientCredentials = (body, options) => {
   const grantType = body.grant_type;
 
   if (body.client_id && body.client_secret) {
     return { clientId: body.client_id, clientSecret: body.client_secret };
   }
 
-  // TODO
-  // if (!isClientAuthenticationRequired(grantType)) {
-  //   if (body.client_id) {
-  //     return { clientId: body.client_id };
-  //   }
-  // }
+  if (!isClientAuthenticationRequired(grantType, options)) {
+    if (body.client_id) {
+      return { clientId: body.client_id };
+    }
+  }
 
   throw new InvalidClientError('Cannot read client credentials from body');
 }
 
 const getClient = async ({ body }, options) => {
   try {
-    const credentials = getClientCredentials(body);
+    const credentials = getClientCredentials(body, options);
     const grantType = body.grant_type;
 
     if (!credentials.clientId) {
       throw new InvalidRequestError('Missing parameter: `client_id`');
     }
 
-    // TODO
-    // if (isClientAuthenticationRequired(grantType) && !credentials.clientSecret) {
-    //   throw new InvalidRequestError('Missing parameter: `client_secret`');
-    // }
+    if (isClientAuthenticationRequired(grantType, options) && !credentials.clientSecret) {
+      throw new InvalidRequestError('Missing parameter: `client_secret`');
+    }
 
-    // if (!is.vschar(credentials.clientId)) {
-    //   throw new InvalidRequestError('Invalid parameter: `client_id`');
-    // }
+    if (!is.vschar(credentials.clientId)) {
+      throw new InvalidRequestError('Invalid parameter: `client_id`');
+    }
 
-    // if (credentials.clientSecret && !is.vschar(credentials.clientSecret)) {
-    //   throw new InvalidRequestError('Invalid parameter: `client_secret`');
-    // }
+    if (credentials.clientSecret && !is.vschar(credentials.clientSecret)) {
+      throw new InvalidRequestError('Invalid parameter: `client_secret`');
+    }
 
     return options.model.getClient(credentials.clientId, credentials.clientSecret);
   } catch (error) {
@@ -64,12 +74,12 @@ const getClient = async ({ body }, options) => {
     //
     // @see https://tools.ietf.org/html/rfc6749#section-5.2.
     // if ((error instanceof InvalidClientError) && request.get('authorization')) {
-    //   response.set('WWW-Authenticate', 'Basic realm="Service"');
+    //   // response.set('WWW-Authenticate', 'Basic realm="Service"');
 
-    //   throw new InvalidClientError(e, { code: 401 });
+    //   throw new InvalidClientError(error, { code: 401 });
     // }
 
-    // throw e;
+    // throw error;
   }
 }
 
@@ -82,24 +92,23 @@ const getRefreshTokenLifetime = (client, options) => {
 }
 
 const handleGrantType = (eventRequest, client, options) => {
-  // const grantType = eventRequest.body.grant_type;
+  const grantType = eventRequest.body.grant_type;
 
-  // if (!grantType) {
-  //   throw new InvalidRequestError('Missing parameter: `grant_type`');
-  // }
+  if (!grantType) {
+    throw new InvalidRequestError('Missing parameter: `grant_type`');
+  }
 
-  // TODO
-  // if (!is.nchar(grantType) && !is.uri(grantType)) {
-  //   throw new InvalidRequestError('Invalid parameter: `grant_type`');
-  // }
+  if (!is.nchar(grantType) && !is.uri(grantType)) {
+    throw new InvalidRequestError('Invalid parameter: `grant_type`');
+  }
 
-  // if (!_.has(this.grantTypes, grantType)) {
-  //   throw new UnsupportedGrantTypeError('Unsupported grant type: `grant_type` is invalid');
-  // }
+  if (!has(this.grantTypes, grantType)) {
+    throw new UnsupportedGrantTypeError('Unsupported grant type: `grant_type` is invalid');
+  }
 
-  // if (!_.includes(client.grants, grantType)) {
-  //   throw new UnauthorizedClientError('Unauthorized client: `grant_type` is invalid');
-  // }
+  if (!includes(client.grants, grantType)) {
+    throw new UnauthorizedClientError('Unauthorized client: `grant_type` is invalid');
+  }
 
   const accessTokenLifetime = getAccessTokenLifetime(client, options);
   const refreshTokenLifetime = getRefreshTokenLifetime(client, options);

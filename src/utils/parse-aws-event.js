@@ -2,7 +2,7 @@ const qs = require('querystring');
 
 const {
   InvalidRequestError
-} = require('../utils/errors');
+} = require('../errors');
 
 module.exports = ({
   headers,

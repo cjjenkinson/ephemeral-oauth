@@ -1,7 +1,7 @@
 const {
   InvalidArgumentError,
   InvalidGrantError
-} = require('../utils/errors');
+} = require('../errors');
 
 const createBaseGrantTypeHelpers = require('./base-grant-type');
 

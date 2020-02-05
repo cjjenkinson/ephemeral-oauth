@@ -1,6 +1,6 @@
 const {
   InvalidArgumentError,
-} = require('../utils/errors');
+} = require('../errors');
 
 module.exports = ({
   accessToken,
