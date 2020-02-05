@@ -1,4 +1,4 @@
-const { has, includes } = require('lodash');
+const { has, includes, assign } = require('lodash');
 
 const {
   InvalidArgumentError,
@@ -7,6 +7,7 @@ const {
   UnsupportedGrantTypeError,
   UnauthorizedClientError,
   ServerError,
+  OAuthError,
 } = require('../errors');
 
 const parseAWSEvent = require('../utils/parse-aws-event');
@@ -102,7 +103,7 @@ const handleGrantType = (eventRequest, client, options) => {
     throw new InvalidRequestError('Invalid parameter: `grant_type`');
   }
 
-  if (!has(this.grantTypes, grantType)) {
+  if (!has(grantTypes, grantType)) {
     throw new UnsupportedGrantTypeError('Unsupported grant type: `grant_type` is invalid');
   }
 
@@ -134,8 +135,11 @@ module.exports = async (event, config) => {
     const options = Object.assign({
       accessTokenLifetime: 60 * 60,             // 1 hour
       refreshTokenLifetime: 60 * 60 * 24 * 14,  // 2 weeks
-      allowExtendedTokenAttributes: false,
-      requireClientAuthentication: {},          // Defaults to true for all grant types
+      allowExtendedTokenAttributes: config.allowExtendedTokenAttributes || false,
+      requireClientAuthentication: config.requireClientAuthentication || {},
+      alwaysIssueNewRefreshToken: config.alwaysIssueNewRefreshToken || false,
+      grantTypes: assign({}, grantTypes, config.extendedGrantTypes),
+      // Defaults to true for all grant types
       ...config,
     });
 
@@ -151,16 +155,7 @@ module.exports = async (event, config) => {
       throw new InvalidArgumentError('model does not implement `getClient()`');
     }
 
-    // TODO - Extra option configurations
-    // this.accessTokenLifetime = options.accessTokenLifetime;
-    // this.grantTypes = _.assign({}, grantTypes, options.extendedGrantTypes);
-    // this.model = options.model;
-    // this.refreshTokenLifetime = options.refreshTokenLifetime;
-    // this.allowExtendedTokenAttributes = options.allowExtendedTokenAttributes;
-    // this.requireClientAuthentication = options.requireClientAuthentication || {};
-    // this.alwaysIssueNewRefreshToken = options.alwaysIssueNewRefreshToken !== false;
-
-    // Parse event request
+    // Parse event request - AWS Lambda specific but can open up to more cloud function providers
     const eventRequest = parseAWSEvent(event);
 
     const client = await getClient(eventRequest, options);
@@ -187,6 +182,6 @@ module.exports = async (event, config) => {
 
     return tokenResponse;
   } catch (error) {
-    throw new ServerError(error);
+    throw new OAuthError(error);
   }
 }
