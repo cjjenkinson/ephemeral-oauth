@@ -7,7 +7,6 @@ const modelAttributes = [
   'accessTokenExpiresAt',
   'refreshToken',
   'refreshTokenExpiresAt',
-  'scope',
   'client',
   'user'
 ];
@@ -40,7 +39,6 @@ module.exports = (data, options) => {
   model.client = data.client;
   model.refreshToken = data.refreshToken;
   model.refreshTokenExpiresAt = data.refreshTokenExpiresAt;
-  model.scope = data.scope;
   model.user = data.user;
 
   if (options && options.allowExtendedTokenAttributes) {

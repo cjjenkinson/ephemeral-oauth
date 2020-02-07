@@ -6,7 +6,7 @@ const {
   InvalidClientError,
   UnsupportedGrantTypeError,
   UnauthorizedClientError,
-  ServerError,
+  LambdaError,
   OAuthError,
 } = require('../errors');
 
@@ -30,6 +30,15 @@ const isClientAuthenticationRequired = (grantType, options) => {
   return true;
 }
 
+/**
+ * Get client credentials.
+ *
+ * The client credentials may be sent using the HTTP Basic authentication scheme or, alternatively,
+ * the `client_id` and `client_secret` can be passed in the body.
+ *
+ * @see https://tools.ietf.org/html/rfc6749#section-2.3.1
+ */
+
 const getClientCredentials = (body, options) => {
   const grantType = body.grant_type;
 
@@ -46,8 +55,14 @@ const getClientCredentials = (body, options) => {
   throw new InvalidClientError('Cannot read client credentials from body');
 }
 
-const getClient = async ({ body }, options) => {
+const getClient = async ({ headers, body }, options) => {
   try {
+    const isValidContentType = (headers['Content-Type'] === 'application/x-www-form-urlencoded');
+
+    if (!isValidContentType) {
+      throw new InvalidRequestError('Invalid request: content must be application/x-www-form-urlencoded');
+    }
+
     const credentials = getClientCredentials(body, options);
     const grantType = body.grant_type;
 
@@ -75,12 +90,13 @@ const getClient = async ({ body }, options) => {
     //
     // @see https://tools.ietf.org/html/rfc6749#section-5.2.
     // if ((error instanceof InvalidClientError) && request.get('authorization')) {
-    //   // response.set('WWW-Authenticate', 'Basic realm="Service"');
-
+    //   return {
+    //      headers: { 'WWW-Authenticate', 'Bearer realm="Service" }
+    //    }
     //   throw new InvalidClientError(error, { code: 401 });
     // }
 
-    // throw error;
+    throw new LambdaError(error);
   }
 }
 
@@ -165,11 +181,11 @@ module.exports = async (event, config) => {
     }
 
     if (!client.grants) {
-      throw new ServerError('missing client `grants`');
+      throw new LambdaError('missing client `grants`');
     }
 
     if (!(client.grants instanceof Array)) {
-      throw new ServerError('`grants` must be an array');
+      throw new LambdaError('`grants` must be an array');
     }
 
     const data = await handleGrantType(eventRequest, client, options);
