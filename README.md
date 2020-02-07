@@ -1,8 +1,8 @@
 # Ephemeral oauth
 
-A compliant oAuth2 library for serverless apps, cloud functions and ephemeral computing.
+A compliant oAuth2 library for building authentication flows with AWS lambda
 
-## Do not use in production
+## Currently this projects only supports the client credentials grant
 
-This project is currently in the early stages.
+This project is in its early stages and is not prepared for general use.
 
