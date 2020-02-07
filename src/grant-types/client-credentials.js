@@ -9,8 +9,6 @@ const clientCredentialGrantType = (options = {}) => {
   const {
     generateAccessToken,
     getAccessTokenExpiresAt,
-    getScope,
-    validateScope
   } = createBaseGrantTypeHelpers(options);
 
   if (!options.model) {
@@ -35,15 +33,13 @@ const clientCredentialGrantType = (options = {}) => {
     return user;
   }
 
-  const saveToken = async (user, client, scope) => {
-    const validatedScope = validateScope(user, client, scope);
-    const accessToken = await generateAccessToken(client, user, scope);
-    const accessTokenExpiresAt = getAccessTokenExpiresAt(client, user, scope);
+  const saveToken = async (user, client) => {
+    const accessToken = await generateAccessToken(client, user);
+    const accessTokenExpiresAt = getAccessTokenExpiresAt(client, user);
 
     const token = {
       accessToken,
       accessTokenExpiresAt,
-      scope: validatedScope
     }
 
     return options.model.saveToken(token, client, user);
@@ -58,11 +54,9 @@ const clientCredentialGrantType = (options = {}) => {
       throw new InvalidArgumentError('Missing parameter: `client`');
     }
 
-    const scope = getScope(eventRequest);
-
     const user = await getUserFromClient(client);
 
-    return saveToken(user, client, scope);
+    return saveToken(user, client);
   }
 
   return {

@@ -58,23 +58,11 @@ const createBaseGrantTypeHelpers = (options = {}) => {
     return expires;
   }
 
-  const getScope = () => {
-    // TODO
-    return null;
-  }
-
-  const validateScope = () => {
-    // TODO
-    return false;
-  }
-
   return {
     generateAccessToken,
     generateRefreshToken,
     getAccessTokenExpiresAt,
     getRefreshTokenExpiresAt,
-    getScope,
-    validateScope
   }
 }
 
