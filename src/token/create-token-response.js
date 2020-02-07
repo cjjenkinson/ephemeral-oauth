@@ -6,7 +6,6 @@ module.exports = ({
   accessToken,
   accessTokenLifetime,
   refreshToken,
-  scope,
   customAttributes = {},
 }) => {
   if (!accessToken) {
@@ -24,10 +23,6 @@ module.exports = ({
 
   if (refreshToken) {
     response.refresh_token = refreshToken;
-  }
-
-  if (scope) {
-    response.scope = scope;
   }
 
   if (customAttributes) {
