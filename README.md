@@ -1,4 +1,4 @@
-# Ephemeral oauth
+# Lambda oauth2
 
 A compliant oAuth2 library for building authentication flows with AWS lambda
 
