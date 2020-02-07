@@ -1,7 +1,7 @@
 {
   "name": "ephemeral-oauth2",
-  "version": "0.0.2",
-  "description": "oAuth2 framework for serverless apps",
+  "version": "0.0.3",
+  "description": "oAuth2 library for building authentication flows with AWS Lambda",
   "main": "src/index.js",
   "author": "Cameron Jenkinson",
   "license": "MIT",
