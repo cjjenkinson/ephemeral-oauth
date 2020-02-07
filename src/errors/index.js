@@ -58,14 +58,6 @@ class InvalidRequestError extends OAuthError {
   }
 }
 
-class InvalidScopeError extends OAuthError {
-  constructor(message) {
-    super(message);
-    this.name = 'invalid_scope';
-    this.code = 400;
-  }
-}
-
 class InvalidTokenError extends OAuthError {
   constructor(message) {
     super(message);
@@ -106,10 +98,10 @@ class UnsupportedResponseTypeError extends OAuthError {
   }
 }
 
-class ServerError extends OAuthError {
+class LambdaError extends OAuthError {
   constructor(message, context) {
     super(message);
-    this.name = 'server_error';
+    this.name = 'lambda_error';
     this.code = 503;
     this.context = context;
   }
@@ -123,11 +115,10 @@ module.exports = {
   InvalidClientError,
   InavlidGrantError,
   InvalidRequestError,
-  InvalidScopeError,
   InvalidTokenError,
   UnauthorizedClientError,
   UnauthorizedRequestError,
   UnsupportedGrantTypeError,
   UnsupportedResponseTypeError,
-  ServerError,
+  LambdaError,
 }
