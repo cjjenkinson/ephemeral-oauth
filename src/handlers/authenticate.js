@@ -128,7 +128,7 @@ const authenticate = async (eventRequest, options) => {
   }
 }
 
-const authenticateByAuthoriser = (token) => {
+const authenticateByAuthoriser = async (token) => {
   try {
     const accessToken = await getAccessToken(token, options);
 
