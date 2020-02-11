@@ -41,13 +41,7 @@ const validateAccessToken = async (accessToken) => {
   return accessToken;
 }
 
-/**
- * Get the token from the request header.
- *
- * @see http://tools.ietf.org/html/rfc6750#section-2.1
- */
-const getTokenFromRequestHeader = (eventRequest) => {
-  const token = eventRequest.headers['Authorization'];
+const getBearerToken = (authenticationHeader) => {
   const matches = token.match(/Bearer\s(\S+)/);
 
   if (!matches) {
@@ -55,6 +49,17 @@ const getTokenFromRequestHeader = (eventRequest) => {
   }
 
   return matches[1];
+}
+
+/**
+ * Get the token from the request header.
+ *
+ * @see http://tools.ietf.org/html/rfc6750#section-2.1
+ */
+const getTokenFromRequestHeader = (eventRequest) => {
+  const authenticationHeader = eventRequest.headers['Authorization'];
+
+  return getBearerToken(token);
 }
 
 /**
@@ -128,8 +133,10 @@ const authenticate = async (eventRequest, options) => {
   }
 }
 
-const authenticateByAuthoriser = async (token) => {
+const authenticateByAuthoriser = async (event, options) => {
   try {
+    const token = getBearerToken(event.authorisationToken);
+
     const accessToken = await getAccessToken(token, options);
 
     const accessTokenResponse = validateAccessToken(accessToken);
@@ -155,9 +162,7 @@ module.exports = async (event, options) => {
     }
 
     if (options.isAuthoriser) {
-      const { authorizationToken: token } = event;
-
-      const response = await authenticateByAuthoriser(token, options);
+      const response = await authenticateByAuthoriser(event, options);
 
       return response;
     }
