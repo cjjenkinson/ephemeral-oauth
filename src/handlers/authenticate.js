@@ -41,7 +41,7 @@ const validateAccessToken = async (accessToken) => {
   return accessToken;
 }
 
-const getBearerToken = (authenticationHeader) => {
+const getBearerToken = (token) => {
   const matches = token.match(/Bearer\s(\S+)/);
 
   if (!matches) {
@@ -57,7 +57,7 @@ const getBearerToken = (authenticationHeader) => {
  * @see http://tools.ietf.org/html/rfc6750#section-2.1
  */
 const getTokenFromRequestHeader = (eventRequest) => {
-  const authenticationHeader = eventRequest.headers['Authorization'];
+  const token = eventRequest.headers['Authorization'];
 
   return getBearerToken(token);
 }
@@ -133,10 +133,8 @@ const authenticate = async (eventRequest, options) => {
   }
 }
 
-const authenticateByAuthoriser = async (event, options) => {
+const authenticateByAuthoriser = async (token, options) => {
   try {
-    const token = getBearerToken(event.authorisationToken);
-
     const accessToken = await getAccessToken(token, options);
 
     const accessTokenResponse = validateAccessToken(accessToken);
