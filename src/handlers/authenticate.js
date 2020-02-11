@@ -128,6 +128,22 @@ const authenticate = async (eventRequest, options) => {
   }
 }
 
+const authenticateByAuthoriser = (token) => {
+  try {
+    const accessToken = await getAccessToken(token, options);
+
+    const accessTokenResponse = validateAccessToken(accessToken);
+
+    return accessTokenResponse
+  } catch (error) {
+    if (!(error instanceof OAuthError)) {
+      throw new LambdaError(error);
+    }
+
+    throw error;
+  }
+}
+
 module.exports = async (event, options) => {
   try {
     if (!options.model) {
@@ -138,7 +154,15 @@ module.exports = async (event, options) => {
       throw new InvalidArgumentError('Invalid argument: model does not implement `getAccessToken()`');
     }
 
-    // Parse event request - AWS Lambda specific but can open up to more cloud function providers
+    if (options.isAuthoriser) {
+      const { authorizationToken: token } = event;
+
+      const response = await authenticateByAuthoriser(token, options);
+
+      return response;
+    }
+
+    // Parse AWS lambda event
     const eventRequest = parseAWSEvent(event);
 
     const response = await authenticate(eventRequest, options);
