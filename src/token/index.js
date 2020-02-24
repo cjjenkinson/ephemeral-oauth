@@ -3,5 +3,5 @@ const createTokenResponse = require('./create-token-response');
 
 module.exports = {
   validateTokenModel,
-  createTokenResponse
-}
+  createTokenResponse,
+};

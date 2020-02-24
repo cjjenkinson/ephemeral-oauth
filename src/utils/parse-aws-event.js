@@ -1,7 +1,7 @@
 const qs = require('querystring');
 
 const {
-  InvalidRequestError
+  InvalidRequestError,
 } = require('../errors');
 
 module.exports = ({
@@ -19,5 +19,5 @@ module.exports = ({
     method,
     query,
     body: qs.parse(body),
-  }
+  };
 };
