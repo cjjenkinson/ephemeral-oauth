@@ -1,10 +1,25 @@
 {
   "name": "lambda-oauth2",
-  "version": "0.2.0",
+  "version": "0.0.8",
   "description": "oAuth2 library for building authentication flows with AWS Lambda",
   "main": "src/index.js",
   "author": "Cameron Jenkinson",
   "license": "MIT",
+  "scripts": {
+    "lint": "eslint src/"
+  },
+  "husky": {
+    "hooks": {
+      "pre-commit": "lint-staged",
+      "pre-push": "yarn lint"
+    }
+  },
+  "lint-staged": {
+    "*.{js,json,css,md,yml}": [
+      "prettier --write",
+      "git add"
+    ]
+  },
   "dependencies": {
     "babel-eslint": "^10.0.3",
     "crypto-random-string": "^3.1.0",

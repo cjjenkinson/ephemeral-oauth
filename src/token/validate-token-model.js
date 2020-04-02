@@ -8,11 +8,11 @@ const modelAttributes = [
   'refreshToken',
   'refreshTokenExpiresAt',
   'client',
-  'user'
+  'user',
 ];
 
 module.exports = (data, options) => {
-  const model = {}
+  const model = {};
 
   if (!data.accessToken) {
     throw new InvalidArgumentError('Missing parameter: `accessToken`');
