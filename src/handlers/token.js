@@ -57,12 +57,6 @@ const getClientCredentials = (body, options) => {
 
 const getClient = async ({ headers, body }, options) => {
   try {
-    const isValidContentType = (headers['Content-Type'] === 'application/x-www-form-urlencoded');
-
-    if (!isValidContentType) {
-      throw new InvalidRequestError('Invalid request: content must be application/x-www-form-urlencoded');
-    }
-
     const credentials = getClientCredentials(body, options);
     const grantType = body.grant_type;
 
