@@ -41,8 +41,8 @@ const validateAccessToken = async (accessToken) => {
   return accessToken;
 }
 
-const getBearerToken = (token) => {
-  const matches = token.match(/Bearer\s(\S+)/);
+const getBearerToken = (authenticationHeader) => {
+  const matches = authenticationHeader.match(/Bearer\s(\S+)/);
 
   if (!matches) {
     throw new InvalidRequestError('Invalid request: malformed authorization header');
@@ -57,9 +57,9 @@ const getBearerToken = (token) => {
  * @see http://tools.ietf.org/html/rfc6750#section-2.1
  */
 const getTokenFromRequestHeader = (eventRequest) => {
-  const token = eventRequest.headers['Authorization'];
+  const authenticationHeader = eventRequest.headers['Authorization'];
 
-  return getBearerToken(token);
+  return getBearerToken(authenticationHeader);
 }
 
 /**
@@ -133,9 +133,9 @@ const authenticate = async (eventRequest, options) => {
   }
 }
 
-const authenticateByAuthoriser = async (token, options) => {
+const authenticateByAuthoriser = async (event, options) => {
   try {
-    const accessToken = await getAccessToken(token, options);
+    const accessToken = await getAccessToken(event, options);
 
     const accessTokenResponse = validateAccessToken(accessToken);
 

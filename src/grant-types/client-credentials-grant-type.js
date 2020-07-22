@@ -34,12 +34,15 @@ const clientCredentialGrantType = (options = {}) => {
   }
 
   const saveToken = async (user, client) => {
+    // TODO: Support scope
+    // const scope = await validateScope(user, client, scope);
     const accessToken = await generateAccessToken(client, user);
     const accessTokenExpiresAt = getAccessTokenExpiresAt(client, user);
 
     const token = {
       accessToken,
       accessTokenExpiresAt,
+      scope: null,
     }
 
     return options.model.saveToken(token, client, user);

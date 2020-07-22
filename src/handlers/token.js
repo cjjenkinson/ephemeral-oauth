@@ -19,7 +19,10 @@ const {
 } = require('../token');
 
 const grantTypes = {
-  client_credentials: require('../grant-types/client-credentials'),
+  client_credentials: require('../grant-types/client-credentials-grant-type'),
+  authorization_code: require('../grant-types/authorization-code-grant-type'),
+  password: require('../grant-types/password-grant-type'),
+  refresh_token: require('../grant-types/refresh-token-grant-type'),
 };
 
 const isClientAuthenticationRequired = (grantType, options) => {
@@ -57,6 +60,13 @@ const getClientCredentials = (body, options) => {
 
 const getClient = async ({ headers, body }, options) => {
   try {
+    const contentType = (headers['Content-Type'] || headers['content-type']);
+    const isValidContentType = (contentType === 'application/x-www-form-urlencoded' || contentType === 'multipart/form-data');
+
+    if (!isValidContentType) {
+      throw new InvalidRequestError('Content must be application/x-www-form-urlencoded');
+    }
+
     const credentials = getClientCredentials(body, options);
     const grantType = body.grant_type;
 
