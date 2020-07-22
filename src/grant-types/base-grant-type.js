@@ -1,5 +1,6 @@
 const {
   InvalidArgumentError,
+  InvalidScopeError,
 } = require('../errors');
 
 const {
@@ -19,7 +20,7 @@ const createBaseGrantTypeHelpers = (options = {}) => {
     accessTokenLifetime: options.accessTokenLifetime,
     model: options.model,
     refreshTokenLifetime: options.refreshTokenLifetime,
-    alwaysIssueNewRefreshToken:options.alwaysIssueNewRefreshToken,
+    alwaysIssueNewRefreshToken: options.alwaysIssueNewRefreshToken,
   }
 
   const generateAccessToken = async (client, user, scope) => {
@@ -58,11 +59,35 @@ const createBaseGrantTypeHelpers = (options = {}) => {
     return expires;
   }
 
+  const getScope = (eventRequest) => {
+    if (!is.nqschar(eventRequest.body.scope)) {
+      throw new InvalidArgumentError('Invalid parameter: `scope`');
+    }
+  
+    return eventRequest.body.scope;
+  }
+
+  const validateScope = async (user, client, scope) => {
+    if (options.model.validateScope) {
+      const scope = await options.model.validateScope(user, client, scope);
+
+      if (!scope) {
+        throw new InvalidScopeError('Invalid scope: Requested scope is invalid');
+      }
+
+      return scope;
+    } else {
+      return scope;
+    }
+  }
+
   return {
     generateAccessToken,
     generateRefreshToken,
     getAccessTokenExpiresAt,
     getRefreshTokenExpiresAt,
+    getScope,
+    validateScope,
   }
 }
 
