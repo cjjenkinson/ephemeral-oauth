@@ -1,6 +1,6 @@
 {
   "name": "lambda-oauth2",
-  "version": "0.2.1",
+  "version": "0.2.2",
   "description": "oAuth2 library for building authentication flows with AWS Lambda",
   "main": "src/index.js",
   "author": "Cameron Jenkinson",
