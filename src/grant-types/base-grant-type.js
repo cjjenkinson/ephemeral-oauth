@@ -3,6 +3,8 @@ const {
   InvalidScopeError,
 } = require('../errors');
 
+const is = require('../validator/is');
+
 const {
   generateRandomToken
 } = require('../utils/generate-token');

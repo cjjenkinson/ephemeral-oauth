@@ -14,6 +14,7 @@ const passwordGrantType = (options = {}) => {
     getAccessTokenExpiresAt,
     generateRefreshToken,
     getRefreshTokenExpiresAt,
+    getScope,
   } = createBaseGrantTypeHelpers(options);
 
   if (!options.model) {
@@ -21,7 +22,7 @@ const passwordGrantType = (options = {}) => {
   }
 
   if (!options.model.getUser) {
-    throw new InvalidArgumentError('Invalid argument: model does not implement `getAuthorizationCode()`');
+    throw new InvalidArgumentError('Invalid argument: model does not implement `getUser()`');
   }
 
   if (!options.model.saveToken) {
@@ -31,31 +32,22 @@ const passwordGrantType = (options = {}) => {
   /**
   * Get user using a username/password combination.
   */
-  const getUser = async () => {
-    if (!request.body.username) {
+  const getUser = async (eventRequest) => {
+    if (!eventRequest.body.username) {
       throw new InvalidRequestError('Missing parameter: `username`');
     }
   
-    if (!request.body.password) {
+    if (!eventRequest.body.password) {
       throw new InvalidRequestError('Missing parameter: `password`');
     }
   
-    if (!is.uchar(request.body.username)) {
-      throw new InvalidRequestError('Invalid parameter: `username`');
+    const user = await options.model.getUser(eventRequest.body.username, eventRequest.body.password);
+
+    if (!user) {
+      throw new InvalidGrantError('Invalid grant: user credentials are invalid');
     }
-  
-    if (!is.uchar(request.body.password)) {
-      throw new InvalidRequestError('Invalid parameter: `password`');
-    }
-  
-    return promisify(this.model.getUser, 2).call(this.model, request.body.username, request.body.password)
-      .then(function(user) {
-        if (!user) {
-          throw new InvalidGrantError('Invalid grant: user credentials are invalid');
-        }
-  
-        return user;
-      });
+
+    return user;
   }
 
   const saveToken = async (user, client, scope) => {
@@ -68,7 +60,6 @@ const passwordGrantType = (options = {}) => {
 
     const token = {
       accessToken,
-      authorizationCode,
       accessTokenExpiresAt,
       refreshToken,
       refreshTokenExpiresAt,
@@ -87,7 +78,7 @@ const passwordGrantType = (options = {}) => {
       throw new InvalidArgumentError('Missing parameter: `client`');
     }
 
-    const scope = options.model.getScope(eventRequest);
+    const scope = getScope(eventRequest);
 
     const user = await getUser(eventRequest);
 

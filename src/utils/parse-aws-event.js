@@ -17,7 +17,7 @@ module.exports = ({
   return {
     headers,
     method,
-    query,
-    body: qs.parse(body),
+    query: qs.parse(query),
+    body: JSON.parse(body),
   };
 };

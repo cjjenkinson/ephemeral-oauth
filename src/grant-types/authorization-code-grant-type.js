@@ -113,7 +113,7 @@ const authorizationCodeGrantType = (options = {}) => {
     return code;
   };
 
-  const saveToken = async (user, client, authorizationCode) => {
+  const saveToken = async (client, user, authorizationCode, scope) => {
     // TODO: Support scope
     // const scope = await validateScope(user, client, scope);
     const accessToken = await generateAccessToken(client, user);
@@ -148,7 +148,7 @@ const authorizationCodeGrantType = (options = {}) => {
 
     revokeAuthorizationCode(code);
 
-    return saveToken(user, client, code.authorizationCode, code.scope);
+    return saveToken(client, code.user, code.authorizationCode, code.scope);
   }
 
   return {

@@ -5,7 +5,6 @@ const {
   InvalidRequestError,
   InvalidClientError,
   UnauthorizedClientError,
-  InvalidGrantError
 } = require('../errors');
 
 const is = require('../validator/is');
@@ -197,12 +196,13 @@ const createAuthorizationCodeResponse = (redirectUri, state) => {
   };
 }
 
-module.exports = async (event, config) => {
+module.exports = async (event, model, config) => {
   try {
     const options = Object.assign({
       allowEmptyState: config.allowEmptyState || false,
       authenticateHandler: config.authenticateHandler || createAuthenticateHandler(config),
       authorizationCodeLifetime: config.authorizationCodeLifetime ||  5 * 60, // 5 minutes
+      ...model,
       ...config,
     });
 

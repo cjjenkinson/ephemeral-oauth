@@ -1,6 +1,6 @@
 coverage
 local
-DS_Store
+.DS_Store
 node_modules
 yarn-error.log
 package-lock.json
