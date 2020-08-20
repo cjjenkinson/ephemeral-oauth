@@ -46,12 +46,17 @@ const getClientCredentials = (body, options) => {
   const grantType = body.grant_type;
 
   if (body.client_id && body.client_secret) {
-    return { clientId: body.client_id, clientSecret: body.client_secret };
+    return { 
+      clientId: body.client_id, 
+      clientSecret: body.client_secret 
+    };
   }
 
   if (!isClientAuthenticationRequired(grantType, options)) {
     if (body.client_id) {
-      return { clientId: body.client_id };
+      return { 
+        clientId: body.client_id 
+      };
     }
   }
 
@@ -60,13 +65,6 @@ const getClientCredentials = (body, options) => {
 
 const getClient = async ({ headers, body }, options) => {
   try {
-    const contentType = (headers['Content-Type'] || headers['content-type']);
-    const isValidContentType = (contentType === 'application/x-www-form-urlencoded' || contentType === 'multipart/form-data');
-
-    if (!isValidContentType) {
-      throw new InvalidRequestError('Content must be application/x-www-form-urlencoded');
-    }
-
     const credentials = getClientCredentials(body, options);
     const grantType = body.grant_type;
 
@@ -134,7 +132,7 @@ const handleGrantType = (eventRequest, client, options) => {
   const accessTokenLifetime = getAccessTokenLifetime(client, options);
   const refreshTokenLifetime = getRefreshTokenLifetime(client, options);
 
-  const createGrantType = grantTypes['client_credentials'];
+  const createGrantType = grantTypes[grantType];
 
   const tokenOptions = {
     accessTokenLifetime: accessTokenLifetime,
@@ -147,10 +145,10 @@ const handleGrantType = (eventRequest, client, options) => {
     handle
   } = createGrantType(tokenOptions);
 
-  return handle(eventRequest, client);
+  return handle(eventRequest, client, options);
 }
 
-module.exports = async (event, config) => {
+module.exports = async (event, model, config) => {
   try {
     const options = Object.assign({
       accessTokenLifetime: 60 * 60,             // 1 hour
@@ -160,6 +158,7 @@ module.exports = async (event, config) => {
       alwaysIssueNewRefreshToken: config.alwaysIssueNewRefreshToken || false,
       grantTypes: assign({}, grantTypes, config.extendedGrantTypes),
       // Defaults to true for all grant types
+      ...model,
       ...config,
     });
 

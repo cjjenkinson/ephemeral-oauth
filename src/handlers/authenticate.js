@@ -149,8 +149,13 @@ const authenticateByAuthoriser = async (event, options) => {
   }
 }
 
-module.exports = async (event, options) => {
+module.exports = async (event, model, config) => {
   try {
+    const options = {
+      ...model,
+      ...config
+    };
+    
     if (!options.model) {
       throw new InvalidArgumentError('Missing parameter: `model`');
     }

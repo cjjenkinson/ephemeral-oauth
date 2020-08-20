@@ -9,9 +9,9 @@ const createOAuth2Handler = (options) => {
     throw new InvalidArgumentError('`model` is a required configuration option');
   }
 
-  const authenticate = async (event) => handleAuthenticate(event, options);
-  const authorize = async (event) => handleAuthorize(event, options);
-  const token = async (event) => handleToken(event, options);
+  const authenticate = async (event, config) => handleAuthenticate(event, options, config);
+  const authorize = async (event, config) => handleAuthorize(event, options, config);
+  const token = async (event, config) => handleToken(event, options, config);
 
   return {
     authenticate,

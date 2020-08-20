@@ -42,7 +42,7 @@ class InvalidClientError extends OAuthError {
   }
 }
 
-class InavlidGrantError extends OAuthError {
+class InvalidGrantError extends OAuthError {
   constructor(message) {
     super(message);
     this.name = 'invalid_grant';
@@ -113,7 +113,7 @@ module.exports = {
   InsufficientScopeError,
   InvalidArgumentError,
   InvalidClientError,
-  InavlidGrantError,
+  InvalidGrantError,
   InvalidRequestError,
   InvalidTokenError,
   UnauthorizedClientError,

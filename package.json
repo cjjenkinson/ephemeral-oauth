@@ -1,7 +1,7 @@
 {
   "name": "lambda-oauth2",
-  "version": "0.2.2",
-  "description": "oAuth2 library for building authentication flows with AWS Lambda",
+  "version": "0.2.3",
+  "description": "oAuth handlers for authentication with AWS Lambda",
   "main": "src/index.js",
   "author": "Cameron Jenkinson",
   "license": "MIT",
@@ -29,6 +29,7 @@
     "eslint-plugin-jest": "^23.6.0",
     "jest": "^25.1.0",
     "lodash": "^4.17.15",
-    "querystring": "^0.2.0"
+    "querystring": "^0.2.0",
+    "url": "^0.11.0"
   }
 }
