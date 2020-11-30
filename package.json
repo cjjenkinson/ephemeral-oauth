@@ -1,6 +1,6 @@
 {
   "name": "lambda-oauth2",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "oAuth handlers for authentication with AWS Lambda",
   "main": "src/index.js",
   "author": "Cameron Jenkinson",

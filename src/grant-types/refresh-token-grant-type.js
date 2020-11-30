@@ -76,7 +76,7 @@ const refreshTokenGrantType = (options = {}) => {
       return token;
     }
 
-    const isValid = await options.model.revokeToken(token);
+    const isValid = await options.model.revokeToken(token.refreshToken);
 
     if (!isValid) {
       throw new InvalidGrantError('Invalid grant: refresh token is invalid');
