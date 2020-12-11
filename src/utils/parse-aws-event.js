@@ -18,6 +18,6 @@ module.exports = ({
     headers,
     method,
     query: qs.parse(query),
-    body: JSON.parse(body),
+    body: JSON.parse(JSON.stringify(body)),
   };
 };
